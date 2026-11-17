@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DailyFlow - Aktiviti Harian</title>
+  
+  <!-- Dynamic PWA Manifest via Data URL -->
+  <link id="pwa-manifest" rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22DailyFlow%22%2C%22short_name%22%3A%22DailyFlow%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafc%22%2C%22theme_color%22%3A%22%234f46e5%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Butf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22110%22%20fill%3D%22%234f46e5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2254%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20font-size%3D%22280%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22bold%22%3ED%3C%2Ftext%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="DailyFlow">
+  
+  <!-- Apple Touch Icon Data URL -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22110%22%20fill%3D%22%234f46e5%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2254%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23ffffff%22%20font-size%3D%22280%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22bold%22%3ED%3C%2Ftext%3E%3C%2Fsvg%3E">
+
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+          colors: { brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+    .neumorph { background: #ffffff; box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+    .neumorph-inset { background: #f1f5f9; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col max-w-md mx-auto relative pb-24 select-none">
+
+  <!-- Header & PWA Install Button Container -->
+  <header class="px-5 pt-6 pb-4 flex items-center justify-between bg-white border-b border-slate-100 sticky top-0 z-20">
+    <div>
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 rounded-xl bg-brand-600 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-brand-500/20">D</div>
+        <h1 class="text-xl font-bold tracking-tight text-slate-900">DailyFlow</h1>
+      </div>
+      <p id="current-date-header" class="text-xs text-slate-500 font-medium mt-0.5">Isnin, 17 Nov 2026</p>
+    </div>
+    
+    <div class="flex items-center space-x-2">
+      <!-- PWA Install Button -->
+      <button id="install-btn" class="hidden items-center space-x-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-3 py-2 rounded-xl shadow-sm transition active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        <span>Install App</span>
+      </button>
+
+      <!-- Settings Menu Toggle -->
+      <button id="menu-toggle-btn" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Settings / Backup Modal Menu -->
+  <div id="settings-menu" class="hidden absolute top-16 right-5 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 z-30 p-2">
+    <button id="export-btn" class="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center space-x-2">
+      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <span>Eksport Backup (JSON)</span>
+    </button>
+    <label class="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 rounded-xl flex items-center space-x-2 cursor-pointer mt-0.5">
+      <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      <span>Import Backup (JSON)</span>
+      <input type="file" id="import-file" accept=".json" class="hidden">
+    </label>
+  </div>
+
+  <!-- Main Scrollable Content -->
+  <main class="flex-1 px-5 pt-4 space-y-5">
+
+    <!-- iOS Add to Home Screen Banner -->
+    <div id="ios-install-banner" class="hidden bg-brand-50 border border-brand-100 p-3.5 rounded-2xl text-xs text-brand-700 flex items-start space-x-3">
+      <svg class="w-5 h-5 text-brand-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div>
+        <span class="font-semibold block mb-0.5">Pasang DailyFlow pada iPhone:</span>
+        Tekan butang <b>Share</b> di pelayar Safari, kemudian pilih <b>"Add to Home Screen"</b>.
+      </div>
+    </div>
+
+    <!-- Dashboard Stats Card -->
+    <section class="neumorph p-5 rounded-3xl space-y-4 relative overflow-hidden">
+      <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-brand-50 rounded-full pointer-events-none"></div>
+      
+      <div class="flex justify-between items-start">
+        <div>
+          <span id="greeting-text" class="text-xs font-semibold text-brand-600 uppercase tracking-wider">Selamat Pagi</span>
+          <h2 id="dashboard-date-title" class="text-lg font-bold text-slate-900 mt-0.5">Hari Ini</h2>
+        </div>
+        <div class="flex items-center space-x-1 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-xl cursor-pointer transition">
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <input type="date" id="date-selector" class="bg-transparent text-xs font-semibold text-slate-700 cursor-pointer focus:outline-none">
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <div class="neumorph-inset p-3.5 rounded-2xl">
+          <span class="text-xs text-slate-500 font-medium block">Jumlah Aktiviti</span>
+          <span id="stat-total" class="text-xl font-bold text-slate-900 mt-0.5 block">0</span>
+        </div>
+        <div class="neumorph-inset p-3.5 rounded-2xl">
+          <span class="text-xs text-slate-500 font-medium block">Selesai</span>
+          <span id="stat-completed" class="text-xl font-bold text-brand-600 mt-0.5 block">0</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="space-y-1.5">
+        <div class="flex justify-between text-xs font-semibold text-slate-600">
+          <span>Kemajuan</span>
+          <span id="progress-percentage">0%</span>
+        </div>
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+          <div id="progress-bar-fill" class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Controls Section -->
+    <section class="flex items-center justify-between">
+      <div class="flex space-x-1 bg-slate-200/70 p-1 rounded-2xl">
+        <button data-filter="all" class="filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-white text-slate-900 shadow-sm transition">Semua</button>
+        <button data-filter="active" class="filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 hover:text-slate-900 transition">Belum Selesai</button>
+        <button data-filter="completed" class="filter-btn px-3.5 py-1.5 text-xs font-semibold rounded-xl text-slate-600 hover:text-slate-900 transition">Selesai</button>
+      </div>
+
+      <button id="open-modal-btn" class="bg-brand-600 hover:bg-brand-700 text-white w-10 h-10 rounded-2xl flex items-center justify-center shadow-md shadow-brand-500/20 transition active:scale-95">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+      </button>
+    </section>
+
+    <!-- Activity List Section -->
+    <section class="space-y-3 pb-6">
+      <div id="activity-list" class="space-y-2.5"></div>
+      
+      <!-- Empty State -->
+      <div id="empty-state" class="hidden flex-col items-center justify-center py-12 text-center px-4">
+        <div class="w-16 h-16 bg-slate-100 rounded-3xl flex items-center justify-center text-slate-400 mb-3">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"/></svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-800">Tiada aktiviti buat masa ini</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-xs">Mulakan hari anda dengan menambah aktiviti baharu menggunakan butang plus di atas.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Activity Modal -->
+  <div id="activity-modal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-end sm:items-center sm:justify-center p-0 sm:p-4 transition-all duration-300">
+    <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-5">
+        <h3 id="modal-title" class="text-base font-bold text-slate-900">Tambah Aktiviti</h3>
+        <button id="close-modal-btn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="activity-form" class="space-y-4">
+        <input type="hidden" id="activity-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Aktiviti</label>
+          <input type="text" id="activity-name" required placeholder="Contoh: Mesyuarat projek mingguan" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:bg-white transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kategori</label>
+          <select id="activity-category" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:bg-white transition">
+            <option value="Peribadi">Peribadi</option>
+            <option value="Kerja">Kerja</option>
+            <option value="Keluarga">Keluarga</option>
+            <option value="Kesihatan">Kesihatan</option>
+            <option value="Lain-lain">Lain-lain</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tarikh</label>
+            <input type="date" id="activity-date" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-brand-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Masa (Optional)</label>
+            <input type="time" id="activity-time" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-xs font-medium text-slate-800 focus:outline-none focus:border-brand-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <div class="flex space-x-3 pt-3">
+          <button type="button" id="cancel-modal-btn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3 rounded-2xl text-sm transition">Batal</button>
+          <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-2xl text-sm shadow-md shadow-brand-500/20 transition">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    let activities = JSON.parse(localStorage.getItem('dailyflow_activities')) || [];
+    let currentDate = new Date().toISOString().split('T')[0];
+    let currentFilter = 'all';
+    let deferredPrompt = null;
+
+    const currentDateHeader = document.getElementById('current-date-header');
+    const dashboardDateTitle = document.getElementById('dashboard-date-title');
+    const greetingText = document.getElementById('greeting-text');
+    const dateSelector = document.getElementById('date-selector');
+    const statTotal = document.getElementById('stat-total');
+    const statCompleted = document.getElementById('stat-completed');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const activityList = document.getElementById('activity-list');
+    const emptyState = document.getElementById('empty-state');
+    
+    const activityModal = document.getElementById('activity-modal');
+    const openModalBtn = document.getElementById('open-modal-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+    const activityForm = document.getElementById('activity-form');
+    const modalTitle = document.getElementById('modal-title');
+    const activityIdInput = document.getElementById('activity-id');
+    const activityNameInput = document.getElementById('activity-name');
+    const activityCategoryInput = document.getElementById('activity-category');
+    const activityDateInput = document.getElementById('activity-date');
+    const activityTimeInput = document.getElementById('activity-time');
+    
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const settingsMenu = document.getElementById('settings-menu');
+    const exportBtn = document.getElementById('export-btn');
+    const importFile = document.getElementById('import-file');
+    const installBtn = document.getElementById('install-btn');
+    const iosInstallBanner = document.getElementById('ios-install-banner');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    function initApp() {
+      dateSelector.value = currentDate;
+      updateHeaderDateDisplay();
+      setGreeting();
+      renderActivities();
+      setupPWAInstall();
+    }
+
+    function formatDateNice(dateStr) {
+      return new Date(dateStr).toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function updateHeaderDateDisplay() {
+      currentDateHeader.textContent = formatDateNice(currentDate);
+      dashboardDateTitle.textContent = currentDate === new Date().toISOString().split('T')[0] ? 'Hari Ini' : formatDateNice(currentDate);
+    }
+
+    function setGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) greetingText.textContent = 'Selamat Pagi';
+      else if (hour < 15) greetingText.textContent = 'Selamat Tengah Hari';
+      else if (hour < 19) greetingText.textContent = 'Selamat Petang';
+      else greetingText.textContent = 'Selamat Malam';
+    }
+
+    function saveActivities() {
+      try { localStorage.setItem('dailyflow_activities', JSON.stringify(activities)); } catch (e) { console.error(e); }
+    }
+
+    function renderActivities() {
+      let filtered = activities.filter(item => item.date === currentDate);
+      if (currentFilter === 'active') filtered = filtered.filter(item => !item.completed);
+      else if (currentFilter === 'completed') filtered = filtered.filter(item => item.completed);
+
+      filtered.sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+
+      const totalForDate = activities.filter(item => item.date === currentDate).length;
+      const completedForDate = activities.filter(item => item.date === currentDate && item.completed).length;
+      const percent = totalForDate > 0 ? Math.round((completedForDate / totalForDate) * 100) : 0;
+
+      statTotal.textContent = totalForDate;
+      statCompleted.textContent = completedForDate;
+      progressBarFill.style.width = `${percent}%`;
+      progressPercentage.textContent = `${percent}%`;
+
+      activityList.innerHTML = '';
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        return;
+      }
+      emptyState.classList.remove('flex');
+      emptyState.classList.add('hidden');
+
+      filtered.forEach(item => {
+        const card = document.createElement('div');
+        card.className = `neumorph p-4 rounded-2xl flex items-center justify-between transition-all duration-200 ${item.completed ? 'opacity-60 bg-slate-50/50' : 'bg-white'}`;
+        
+        let badgeColor = 'bg-slate-100 text-slate-600';
+        if (item.category === 'Kerja') badgeColor = 'bg-blue-50 text-blue-600';
+        else if (item.category === 'Peribadi') badgeColor = 'bg-purple-50 text-purple-600';
+        else if (item.category === 'Keluarga') badgeColor = 'bg-amber-50 text-amber-600';
+        else if (item.category === 'Kesihatan') badgeColor = 'bg-emerald-50 text-emerald-600';
+
+        card.innerHTML = `
+          <div class="flex items-center space-x-3.5 flex-1 min-w-0 pr-3">
+            <button onclick="toggleComplete('${item.id}')" class="w-6 h-6 rounded-full border-2 ${item.completed ? 'bg-brand-600 border-brand-600 text-white' : 'border-slate-300 bg-white'} flex items-center justify-center shrink-0 transition active:scale-90">
+              ${item.completed ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' : ''}
+            </button>
+            <div class="min-w-0 flex-1">
+              <h4 class="text-sm font-semibold text-slate-800 truncate ${item.completed ? 'line-through text-slate-400' : ''}">${escapeHtml(item.name)}</h4>
+              <div class="flex items-center space-x-2 mt-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeColor}">${item.category}</span>
+                ${item.time ? `<span class="text-[10px] font-medium text-slate-400">🕒 ${item.time}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-1 shrink-0">
+            <button onclick="openEditModal('${item.id}')" class="w-8 h-8 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 transition">✏️</button>
+            <button onclick="deleteActivity('${item.id}')" class="w-8 h-8 rounded-xl hover:bg-red-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition">🗑️</button>
+          </div>
+        `;
+        activityList.appendChild(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    window.toggleComplete = function(id) {
+      activities = activities.map(item => item.id === id ? { ...item, completed: !item.completed } : item);
+      saveActivities();
+      renderActivities();
+    }
+
+    window.deleteActivity = function(id) {
+      if (confirm('Padam aktiviti ini?')) {
+        activities = activities.filter(item => item.id !== id);
+        saveActivities();
+        renderActivities();
+      }
+    }
+
+    window.openEditModal = function(id) {
+      const item = activities.find(i => i.id === id);
+      if (!item) return;
+      modalTitle.textContent = 'Edit Aktiviti';
+      activityIdInput.value = item.id;
+      activityNameInput.value = item.name;
+      activityCategoryInput.value = item.category;
+      activityDateInput.value = item.date;
+      activityTimeInput.value = item.time || '';
+      activityModal.classList.remove('hidden');
+    }
+
+    openModalBtn.addEventListener('click', () => {
+      modalTitle.textContent = 'Tambah Aktiviti';
+      activityForm.reset();
+      activityIdInput.value = '';
+      activityDateInput.value = currentDate;
+      activityModal.classList.remove('hidden');
+    });
+
+    const closeModal = () => activityModal.classList.add('hidden');
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelModalBtn.addEventListener('click', closeModal);
+
+    activityForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = activityIdInput.value;
+      const name = activityNameInput.value.trim();
+      const category = activityCategoryInput.value;
+      const date = activityDateInput.value;
+      const time = activityTimeInput.value;
+      if (!name || !date) return;
+
+      if (id) {
+        activities = activities.map(item => item.id === id ? { ...item, name, category, date, time } : item);
+      } else {
+        activities.push({ id: 'act_' + Date.now(), name, category, date, time, completed: false });
+      }
+      saveActivities();
+      closeModal();
+      renderActivities();
+    });
+
+    dateSelector.addEventListener('change', (e) => {
+      if (e.target.value) {
+        currentDate = e.target.value;
+        updateHeaderDateDisplay();
+        renderActivities();
+      }
+    });
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => { b.classList.remove('bg-white', 'text-slate-900', 'shadow-sm'); b.classList.add('text-slate-600'); });
+        btn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+        btn.classList.remove('text-slate-600');
+        currentFilter = btn.getAttribute('data-filter');
+        renderActivities();
+      });
+    });
+
+    menuToggleBtn.addEventListener('click', () => settingsMenu.classList.toggle('hidden'));
+    document.addEventListener('click', (e) => {
+      if (!menuToggleBtn.contains(e.target) && !settingsMenu.contains(e.target)) settingsMenu.classList.add('hidden');
+    });
+
+    exportBtn.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activities, null, 2));
+      const dl = document.createElement('a');
+      dl.setAttribute("href", dataStr);
+      dl.setAttribute("download", `dailyflow_backup.json`);
+      document.body.appendChild(dl);
+      dl.click();
+      dl.remove();
+      settingsMenu.classList.add('hidden');
+    });
+
+    importFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (Array.isArray(imported)) {
+            activities = imported;
+            saveActivities();
+            renderActivities();
+            alert('Backup berjaya diimport!');
+          }
+        } catch (err) { alert('Ralat fail JSON.'); }
+      };
+      reader.readAsText(file);
+      settingsMenu.classList.add('hidden');
+    });
+
+    function setupPWAInstall() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      if (isStandalone) {
+        installBtn.classList.add('hidden');
+        iosInstallBanner.classList.add('hidden');
+        return;
+      }
+      if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())) {
+        iosInstallBanner.classList.remove('hidden');
+      }
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden');
+        installBtn.classList.add('flex');
+      });
+      installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') installBtn.classList.add('hidden');
+          deferredPrompt = null;
+        }
+      });
+      window.addEventListener('appinstalled', () => { installBtn.classList.add('hidden'); });
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+          const CACHE_NAME = 'dailyflow-v1';
+          self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+          self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+          self.addEventListener('fetch', e => {
+            e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+          });
+        `)).catch(() => {});
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
